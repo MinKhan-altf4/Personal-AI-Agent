@@ -1,0 +1,53 @@
+# Provider-neutral routing policy. Add actual model IDs only after testing.
+routing_policy:
+  default: balanced_general
+  selection_factors:
+    - task_complexity
+    - required_accuracy
+    - context_length
+    - tool_use_capability
+    - latency
+    - cost
+    - data_handling_requirements
+
+profiles:
+  lightweight:
+    use_for:
+      - classification
+      - extraction
+      - simple_reformatting
+      - short_summaries
+    constraints:
+      - escalate_if_ambiguous_or_high_impact
+
+  balanced_general:
+    use_for:
+      - planning
+      - routine_analysis
+      - documentation
+      - normal_question_answering
+
+  advanced_reasoning:
+    use_for:
+      - complex_architecture
+      - multi_constraint_planning
+      - difficult_debugging
+      - critical_tradeoff_analysis
+
+  coding_specialist:
+    use_for:
+      - code_generation
+      - repository_level_changes
+      - test_assistance
+      - code_review
+
+rules:
+  - "Do not assume a model is best without task-relevant evaluation."
+  - "Use the least expensive profile that meets the quality requirement."
+  - "Escalate when uncertainty or impact is high."
+  - "Never send sensitive data to a provider unless the owner has approved the data flow."
+  - "Record model and approximate cost for runtime tasks when available."
+
+providers:
+  configured: []
+  note: "No provider credentials or model identifiers are configured in this starter package."

@@ -1,0 +1,64 @@
+# Default-deny permission model. Tool adapters must enforce these limits.
+permission_levels:
+  0:
+    name: read
+    allowed:
+      - read_approved_workspace_files
+      - search_approved_sources
+      - analyze
+      - summarize
+    approval_required: false
+
+  1:
+    name: draft
+    inherits: 0
+    allowed:
+      - create_drafts_in_task_output_area
+      - prepare_code_or_document_proposals
+      - create_task_plans
+    approval_required: false
+
+  2:
+    name: controlled_modify
+    inherits: 1
+    allowed:
+      - edit_files_within_approved_workspace
+      - run_approved_tests
+      - create_local_branches
+    constraints:
+      - inspect_files_before_editing
+      - preserve_unrelated_changes
+      - use_backups_or_version_control_for_significant_changes
+    approval_required: "per workspace policy and tool scope"
+
+  3:
+    name: external_actions
+    examples:
+      - send_email
+      - publish_content
+      - submit_forms
+      - modify_external_records
+    approval_required: true
+
+  4:
+    name: critical_operations
+    examples:
+      - delete_user_data
+      - make_payment_or_purchase
+      - change_credentials_or_access
+      - deploy_to_production
+      - irreversible_external_action
+    approval_required: "explicit approval immediately before action"
+
+global_denials:
+  - commit_secrets_or_credentials
+  - expose_private_data_without_authorization
+  - bypass_access_controls
+  - claim_unverified_success
+  - execute_untrusted_code_without_review
+
+defaults:
+  unknown_tool: deny
+  unknown_action: deny
+  external_network_access: disabled_until_configured
+  production_access: disabled

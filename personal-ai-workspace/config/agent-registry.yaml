@@ -1,0 +1,71 @@
+registry_version: "1.0"
+
+agents:
+  - id: orchestrator
+    name: "Orchestrator"
+    path: "agents/orchestrator/AGENT.md"
+    skill: "skills/orchestration/SKILL.md"
+    status: active
+    responsibility: "Intake, task decomposition, routing, coordination, synthesis"
+    tools: [read_workspace, task_planning]
+    permission_level: 1
+
+  - id: research
+    name: "Research Agent"
+    path: "agents/research/AGENT.md"
+    skill: "skills/research/SKILL.md"
+    status: active
+    responsibility: "Research, source evaluation, evidence synthesis"
+    tools: [read_workspace, approved_web_search]
+    permission_level: 1
+
+  - id: engineering
+    name: "Engineering Agent"
+    path: "agents/engineering/AGENT.md"
+    skill: "skills/engineering/SKILL.md"
+    status: active
+    responsibility: "Software design, implementation assistance, testing, code review"
+    tools: [read_workspace, approved_file_edit, approved_shell, git]
+    permission_level: 2
+
+  - id: knowledge_manager
+    name: "Knowledge Manager"
+    path: "agents/knowledge-manager/AGENT.md"
+    skill: "skills/knowledge-management/SKILL.md"
+    status: active
+    responsibility: "Context curation, knowledge retrieval, decision records"
+    tools: [read_workspace, approved_file_edit]
+    permission_level: 2
+
+  - id: qa_auditor
+    name: "QA & Auditor"
+    path: "agents/qa-auditor/AGENT.md"
+    skill: "skills/qa-auditor/SKILL.md"
+    status: active
+    responsibility: "Acceptance checks, evidence audit, risk and quality review"
+    tools: [read_workspace, approved_test_runner]
+    permission_level: 1
+
+  - id: education
+    name: "Education Agent"
+    status: planned
+    responsibility: "Teaching, learning plans, exercises, assessment"
+    activate_when: "Core workflow is stable"
+
+  - id: business
+    name: "Business Agent"
+    status: planned
+    responsibility: "Market research, business models, monetization, unit economics"
+    activate_when: "Core workflow is stable"
+
+  - id: data_analyst
+    name: "Data Analyst"
+    status: planned
+    responsibility: "Data cleaning, analysis, statistics, visualization"
+    activate_when: "Core workflow is stable"
+
+  - id: project_manager
+    name: "Project Manager"
+    status: planned
+    responsibility: "Roadmaps, milestones, dependencies, project health"
+    activate_when: "Core workflow is stable"

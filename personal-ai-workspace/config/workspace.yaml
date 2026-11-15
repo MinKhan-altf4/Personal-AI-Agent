@@ -1,0 +1,52 @@
+workspace:
+  name: "Personal AI-Agent Workspace"
+  slug: "personal-ai-workspace"
+  version: "1.0.0"
+  status: "foundation"
+  owner_role: "commander"
+  default_language: "vi"
+  technical_language: "en"
+  primary_environment: "windows"
+
+  domains:
+    - education
+    - career
+    - personal_projects
+    - business
+    - personal_development
+
+  principles:
+    - human_in_the_loop
+    - least_privilege
+    - evidence_based
+    - context_before_action
+    - smallest_sufficient_agent_team
+    - cost_aware_model_selection
+    - verify_before_claiming
+    - reversible_changes_first
+
+  paths:
+    agents: "agents/"
+    skills: "skills/"
+    projects: "projects/"
+    knowledge: "knowledge/"
+    workflows: "workflows/"
+    templates: "templates/"
+    runtime: "runtime/"
+
+  execution:
+    default_mode: "plan_then_execute"
+    require_task_objective: true
+    require_project_context: true
+    require_completion_report: true
+    allow_autonomous_external_actions: false
+    max_parallel_agents_initial: 3
+
+  status_values:
+    - pending
+    - in_progress
+    - review
+    - completed
+    - partial
+    - blocked
+    - cancelled
