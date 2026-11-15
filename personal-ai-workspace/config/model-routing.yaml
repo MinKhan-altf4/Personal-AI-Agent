@@ -49,5 +49,22 @@ rules:
   - "Record model and approximate cost for runtime tasks when available."
 
 providers:
-  configured: []
-  note: "No provider credentials or model identifiers are configured in this starter package."
+  configured: [anthropic]
+  note: "Credentials come from the environment (ANTHROPIC_API_KEY or `ant auth login`), never from this file. See DEC-004."
+
+# Used by the Phase 3 runtime (runtime/agent_runtime). Change models here only after evaluating quality.
+runtime:
+  provider: anthropic
+  refusal_fallback: "default"
+  max_tool_turns: 20
+  profile_models:
+    lightweight:        {model: "claude-opus-5-5", effort: "low",    max_tokens: 4000}
+    balanced_general:   {model: "claude-opus-5-5", effort: "medium", max_tokens: 16000}
+    advanced_reasoning: {model: "claude-opus-5-5", effort: "high",   max_tokens: 16000}
+    coding_specialist:  {model: "claude-opus-5-5", effort: "high",   max_tokens: 16000}
+  agent_profiles:
+    orchestrator: lightweight
+    research: balanced_general
+    engineering: coding_specialist
+    knowledge_manager: balanced_general
+    qa_auditor: balanced_general

@@ -91,3 +91,31 @@ To keep QA independent, `agents/qa-auditor/AGENT.md` adds a rule: QA must not ed
 ### Consequences
 - QA technically gains `edit_files_within_approved_workspace`. The no-edit rule is prompt-level only until the Phase 3 runtime can restrict actions per agent.
 - Every active agent now has a `permission_level` that covers all its tools.
+
+---
+
+## DEC-004 — Phase 3 runtime design
+
+- **Date:** 2026-11-15
+- **Status:** approved (Commander instructed Phase 3 execution); revisit after Phase 3 validation
+- **Approver:** Commander (workspace owner)
+- **Source task:** TASK-20261115-003
+
+### Context
+`PROJECT_CONTEXT.md` §13 left open: AI provider, orchestration style, persistent store. Phase 3 needs a minimal choice for each.
+
+### Decision
+1. **Provider:** Anthropic Claude via the official `anthropic` Python SDK. Every routing profile uses `claude-opus-5-5`; profiles differ only by `effort`. Server-side refusal fallback (`fallbacks: "default"`) is on.
+2. **Orchestration:** a small custom state machine (classify → execute → optional QA → report) with a manual tool loop. No LangGraph.
+3. **Persistence:** SQLite (`runtime/data/runtime.sqlite`, git-ignored) for task state and an audit log of every tool call. `tasks/INDEX.md` stays the human-readable register; the runtime appends and updates its rows.
+4. **Enforcement:** the runtime checks `permissions.yaml` before every tool call: the agent's level must cover the tool's `min_level`, file access is confined to the workspace, secret paths are always denied, level-1 agents write only in `tasks/<TASK-ID>/`, and level-2 writes require human confirmation unless `--yes` is passed.
+5. **Tools implemented in v0.1:** `read_workspace`, `task_planning`, `approved_file_edit`, `approved_test_runner`. Not implemented: `approved_web_search` (network disabled by policy), `approved_shell`, `git`. Agents listing them simply do not receive them.
+
+### Alternatives considered
+- **LangGraph** — rejected for now: adds a framework before the workflow is proven.
+- **Tool Runner (beta)** — rejected: a manual loop makes the per-call permission gate and audit log explicit.
+- **Cheaper models for light profiles** — not chosen; the owner may change `model-routing.yaml` later based on measured quality.
+
+### Consequences
+- Running the runtime needs an Anthropic API key and costs money per task. `--dry-run` runs offline with a scripted model for testing.
+- Phase 4 (more agents/integrations) and Phase 5 (dashboard) remain gated on demonstrated need, per the roadmap.

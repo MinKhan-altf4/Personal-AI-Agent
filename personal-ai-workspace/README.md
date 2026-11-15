@@ -57,7 +57,7 @@ personal-ai-workspace/
 │   └── INDEX.md
 ├── knowledge/
 │   └── README.md
-├── runtime/
+├── runtime/                # Phase 3 Python runtime (agent_runtime/, tests/)
 │   └── README.md
 ├── workflows/
 │   └── task-execution.md
@@ -115,6 +115,6 @@ Do not paste credentials or access tokens into files or commit history.
 
 ## 6. Important implementation boundary
 
-This package is a **documentation/configuration foundation**, not yet a running autonomous agent platform. It does not currently execute agents, call model APIs, schedule jobs, or connect to GitHub automatically. Those capabilities belong to a later runtime implementation.
+Since Phase 3 (DEC-004) the workspace includes a minimal Python runtime in `runtime/` that executes the active agents with Claude, enforces `config/permissions.yaml` in code, and records every task in SQLite and `tasks/`. See [`runtime/README.md`](runtime/README.md) for setup and commands.
 
-Build and validate the instruction layer first. Add Python orchestration, model adapters, persistent storage, and a UI only when a real workflow requires them.
+It still does **not** schedule jobs, browse the web, run arbitrary shell commands, use git, send messages, or connect to external services. Add those only when a real workflow requires them (Phases 4–5).

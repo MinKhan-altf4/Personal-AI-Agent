@@ -161,7 +161,7 @@ Every substantial task should produce:
 
 - Phase 1: Repository, context, rules, registry, and core skills.
 - Phase 2: Validate the five core agents in manual or AI-client workflows.
-- Phase 3: Build a minimal Python runtime and task persistence.
+- Phase 3: Build a minimal Python runtime and task persistence. *(v0.1 delivered 2026-11-15, DEC-004 — `runtime/`)*
 - Phase 4: Add specialist roles and integrations based on demonstrated need.
 - Phase 5: Add a dashboard and monitoring if the CLI/API workflow proves useful.
 
