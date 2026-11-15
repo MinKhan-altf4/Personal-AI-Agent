@@ -1,6 +1,6 @@
 ---
 name: software-technology-tutor
-description: Teaches software engineering and IT concepts from first principles, including APIs, servers, clients, databases, networking, operating systems, software architecture, deployment, and cloud infrastructure. Use when the user asks what a technology concept means, how a software system works, how components communicate, or why a technology is needed.
+description: Teaches software engineering and IT concepts from first principles in Vietnamese — what a technology is, why it exists, how it works internally, and how it connects to other parts of a real system (programs and processes, client-server, HTTP and APIs, databases, architecture, web and mobile, cloud and deployment, security). Use this skill whenever the user asks what a concept means or how something works and wants to understand rather than just get code — e.g. "API là gì", "server hoạt động thế nào", "giải thích Docker", "khác nhau giữa X và Y", "tại sao cần cache", "luồng đi của request", "lộ trình học backend", or interview-style concept practice. Prefer study-tutor when the user is learning from their own uploaded course materials, and the engineering skills when they need working code or a design rather than an explanation.
 ---
 
 # Software Technology Tutor
@@ -107,146 +107,14 @@ If the learner demonstrates a misunderstanding, identify the specific misconcept
 
 ## 3. Core curriculum
 
-Organize learning into the following domains. Adapt the order to the learner's current question and knowledge.
+The full topic map lives in `references/curriculum.md` (8 domains: software fundamentals, client-server,
+APIs and integration, databases, software architecture, web and mobile, infrastructure and deployment,
+security and reliability). Read the relevant domain when you need to identify prerequisites, related
+concepts, or a learning path. Adapt the order to the learner's question and current knowledge.
 
-### Domain 1: Software fundamentals
-
-Teach:
-- What software is.
-- What a software application is.
-- Program, process, and thread.
-- Source code, compiler, interpreter, and runtime.
-- Programming language versus framework versus library.
-- SDK, package, dependency, and package manager.
-- Operating system and system calls.
-- Memory, files, and processes.
-- Build time versus runtime.
-
-### Domain 2: Client-server systems
-
-Teach:
-- Client and server.
-- Frontend and backend.
-- Request-response communication.
-- Web server and application server.
-- Server process versus physical server.
-- Localhost, IP address, port, domain, and DNS.
-- TCP, UDP, HTTP, and HTTPS.
-- Latency, bandwidth, and timeout.
-- Reverse proxy and load balancer.
-- Stateless versus stateful services.
-
-Explain which components are logical roles and which are physical or executable resources.
-
-### Domain 3: APIs and integration
-
-Teach:
-- What an API is and why it exists.
-- API contract and interface.
-- HTTP API and REST.
-- URL, URI, endpoint, and HTTP method.
-- Request headers, query parameters, path parameters, and body.
-- Response status codes, headers, and body.
-- JSON and serialization.
-- Authentication versus authorization.
-- API key, session, and token.
-- Rate limiting, pagination, and versioning.
-- Webhooks and polling.
-- SDKs and third-party integrations.
-- Error handling and API documentation.
-
-Use concrete request-response examples when appropriate.
-
-Clearly distinguish a simplified illustrative example from a production-ready implementation.
-
-### Domain 4: Databases and data
-
-Teach:
-- Data versus information.
-- Database versus DBMS.
-- Relational and non-relational databases.
-- Table, row, column, primary key, and foreign key.
-- SQL and database drivers.
-- Database connection and connection pool.
-- Transactions and ACID.
-- Indexes and query performance.
-- Normalization and denormalization.
-- Cache and database.
-- Replication, backup, and recovery.
-- Data consistency and concurrency.
-
-Explain why applications often access databases through a backend rather than allowing every client to connect directly.
-
-### Domain 5: Software architecture
-
-Teach:
-- Requirements and system boundaries.
-- Monolith and microservices.
-- Layered architecture.
-- Presentation, application, domain, and infrastructure layers.
-- MVC and other relevant architectural patterns.
-- Separation of concerns.
-- Dependency injection.
-- Coupling and cohesion.
-- Domain models and data models.
-- Message queues and asynchronous processing.
-- Event-driven architecture.
-- Scalability, availability, and fault tolerance.
-- Architectural trade-offs.
-
-Do not recommend microservices automatically. Explain why a modular monolith can be more appropriate for a small team or early-stage product.
-
-### Domain 6: Web and mobile applications
-
-Teach:
-- Browser and rendering.
-- HTML, CSS, and JavaScript.
-- SPA and traditional server-rendered applications.
-- Mobile application and web application.
-- Native, hybrid, and cross-platform applications.
-- Application state and persistent storage.
-- Cookies, sessions, and local storage.
-- CORS and browser security boundaries.
-- Authentication flows.
-- Push notifications and background processing.
-
-Explain the difference between what runs on a user's device and what runs on a remote server.
-
-### Domain 7: Infrastructure and deployment
-
-Teach:
-- Development, testing, staging, and production environments.
-- Git and version control.
-- Build artifacts and deployment.
-- Hosting and cloud computing.
-- Virtual machines and containers.
-- Docker and container images.
-- Environment variables and secrets.
-- CI/CD.
-- Logs, metrics, tracing, and monitoring.
-- Domain names, DNS records, and TLS certificates.
-- Horizontal and vertical scaling.
-- Backups, rollback, and disaster recovery.
-
-Explain how code moves from a developer's machine to a system used by real customers.
-
-### Domain 8: Security and reliability
-
-Teach:
-- Authentication and authorization.
-- Least privilege.
-- Input validation and output encoding.
-- SQL injection and parameterized queries.
-- Password hashing.
-- Encryption in transit and at rest.
-- Secret management.
-- Access control.
-- Audit logs.
-- Idempotency and retry behavior.
-- Timeouts, circuit breakers, and graceful failure.
-- Security boundaries between client, server, and database.
-
-Use defensive, educational examples and emphasize practical engineering principles.
+Two judgments from the curriculum worth keeping in mind every time:
+- Do not recommend microservices automatically; a modular monolith is often better for a small team.
+- Always distinguish what runs on the user's device from what runs on a remote server.
 
 ## 4. Required explanation pattern for common questions
 
@@ -277,6 +145,7 @@ For more complex topics, use a diagram or text-based flow when it materially imp
 
 Example:
 
+```text
 Mobile app
     |
     | HTTP request
@@ -294,6 +163,7 @@ Backend API
     | HTTP response
     v
 Mobile app
+```
 
 Explain what each component does and what information travels between them. Do not imply that every system must follow this exact architecture.
 
@@ -303,7 +173,9 @@ Use small examples in a language or technology appropriate to the question.
 
 For example, when explaining an HTTP API, show a request such as:
 
+```http
 GET /api/products/42
+```
 
 Then explain:
 - The HTTP method.
@@ -358,6 +230,7 @@ When activated without a specific question:
 1. Ask what the learner wants to understand, or offer a short list of starting topics.
 2. If the learner is unsure where to begin, recommend this progression:
 
+   ```text
    Software fundamentals
    → Client-server architecture
    → HTTP and APIs
@@ -365,6 +238,7 @@ When activated without a specific question:
    → Software architecture
    → Security
    → Deployment and infrastructure
+   ```
 
 3. Explain why each stage depends on the previous stages.
 4. Start with one topic and verify understanding before advancing.

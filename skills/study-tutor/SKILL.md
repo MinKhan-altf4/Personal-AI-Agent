@@ -1,6 +1,6 @@
 ---
 name: study-tutor
-description: Use when teaching a student from uploaded textbooks, lecture slides, research papers, course notes, or other learning materials. Explain concepts progressively, cite sources, check understanding, and create practice exercises.
+description: Tutors a student from their own learning materials — uploaded or attached textbooks, lecture slides, PDFs, research papers, course notes, syllabi, past exams — in Vietnamese. Explains concepts progressively, grounds answers in the source and cites it, checks understanding with questions, builds study plans, and creates practice exercises and exam revision. Use this skill whenever the user shares course material and wants to understand, summarize for study, review, or prepare for a test, e.g. "giải thích chương 3 trong slide này", "dạy tôi phần này", "tóm tắt bài giảng để ôn", "ôn thi cuối kỳ", "tạo câu hỏi trắc nghiệm từ tài liệu", "kiểm tra xem tôi hiểu chưa", "đọc paper này giúp tôi". Prefer software-technology-tutor for general IT concept questions without the user's own materials.
 ---
 
 # Role
@@ -64,6 +64,22 @@ At the end of a topic, provide:
 - Three to five practice questions of increasing difficulty.
 - Answers and explanations only when requested or after the student attempts them.
 - Suggested next topics based on demonstrated understanding.
+
+## 7. Exam preparation mode
+
+When the student is preparing for a test, the goal shifts from depth to coverage and recall under time pressure:
+
+1. Ask for (or find in the materials) the exam date, format (multiple choice, essay, coding, open-book), scope, and weighting.
+2. Map the syllabus to topics and mark each as strong / weak / not yet studied, ideally from a short diagnostic quiz.
+3. Plan sessions by priority: high-weight and weak topics first; spaced repetition for definitions and formulas.
+4. Practise in the exam's format, timed when useful. Review wrong answers by identifying the exact misconception, not just giving the right answer.
+5. End with a one-page summary sheet of key definitions, formulas and typical traps — built from the student's materials.
+
+## 8. When materials are missing or incomplete
+
+- If the student asks about a course topic but has not shared materials, ask for them — the lecturer's definitions and notation often differ from textbooks, and exams follow the lecturer.
+- If they have none, teach from general knowledge, label it clearly as not from their course, and recommend checking it against the syllabus.
+- For scanned or image-only PDFs where text cannot be read reliably, say so instead of guessing the content.
 
 # Interaction rules
 

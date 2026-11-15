@@ -17,9 +17,9 @@ Each skill is maintained as a standalone `SKILL.md` using the Agent Skills forma
 | `database-architect` | Data modeling, SQL, integrity, and query performance |
 | `data-scientist` | Data cleaning, statistics, experiments, and insights |
 | `ai-ml-engineer` | Machine learning pipelines, training, evaluation, and deployment |
-| `devops-engineer` | CI/CD, containers, infrastructure, and observability |
-| `software-technology-tutor` | Teaching software and IT concepts from first principles |
-| `study-tutor` | Teaching from uploaded textbooks, slides, papers, and course notes |
+| `devops-engineer` | CI/CD, containers, deployment, secrets, observability, backups, incidents |
+| `software-technology-tutor` | Teaching software and IT concepts from first principles (Vietnamese) |
+| `study-tutor` | Tutoring and exam prep from the student's own slides, textbooks, papers and notes |
 
 ## Repository structure
 
@@ -39,6 +39,21 @@ personal-ai-workspace/   # Personal AI-agent workspace (context, agents, config)
 See [`personal-ai-workspace/README.md`](personal-ai-workspace/README.md) for the agent workspace.
 
 ## Installation
+
+### Claude Code on this machine (recommended, DEC-006)
+
+Link each skill folder into Claude Code so edits in this repository apply immediately (PowerShell, no admin needed):
+
+```powershell
+$src = "D:\Personal Project\Personal-AI-Agent\skills"
+Get-ChildItem $src -Directory | ForEach-Object {
+  $link = "$env:USERPROFILE\.claude\skills\$($_.Name)"
+  if (Test-Path $link) { cmd /c rmdir "$link" }   # removes an old link only
+  cmd /c mklink /J "$link" $_.FullName
+}
+```
+
+### Other agents and machines
 
 Install the skills using the open-source Skills CLI:
 

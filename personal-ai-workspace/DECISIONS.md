@@ -29,7 +29,7 @@ Inspection showed the sets serve different purposes: root skills define a specia
 1. `skills/` at the repository root is the **single source of truth for domain knowledge** (specialist personas). It is what gets published and installed.
 2. `personal-ai-workspace/skills/` contains **agent procedures only** — how an agent works, reports, and stays within permissions. It must not duplicate domain knowledge from `skills/`.
 3. Agents reference domain skills through the `domain_skills` field in `config/agent-registry.yaml` instead of copying their content.
-4. `~/.claude/skills/` is an **install target only**. It is never edited by hand; refresh it by reinstalling from the published repository.
+4. ~~`~/.claude/skills/` is an **install target only**. It is never edited by hand; refresh it by reinstalling from the published repository.~~ *Superseded by DEC-006.*
 
 ### Alternatives considered
 - **Merge `engineering` into `software-engineer`** — rejected: mixes agent procedure with specialist role and breaks the registry's agent/skill boundary.
@@ -148,3 +148,30 @@ Product source code lives in its own repositories (README §1, `projects/README.
 - `config/projects.yaml` contains a machine-specific path; on another machine `check` reports it as missing until edited.
 - `dotnet test` writes build output (`bin/`, `obj/`) inside the project; these are git-ignored there.
 - Only `qa_auditor` has the test runner; Engineering cannot run tests itself (registry unchanged).
+
+---
+
+## DEC-006 — Link Claude Code skills directly to the repository and rewrite domain skills
+
+- **Date:** 2026-11-15
+- **Status:** approved (Commander asked to install the repository's skills into Claude and improve them)
+- **Approver:** Commander
+- **Supersedes:** DEC-001 point 4
+
+### Context
+`~/.claude/skills/` held six skills installed on 2026-10-25 by `npx skills` from a different repository (`MinKhan-altf4/it-agent-skills`), stored in `~/.agents/skills/` with the old UTF-8 BOM. `study-tutor` and `software-technology-tutor` were not installed. Six domain skills shared one identical generic body.
+
+### Decision
+1. Each entry in `~/.claude/skills/<name>` is a **directory junction** to `skills/<name>` in this repository, so the repository is the single source and edits apply without publishing.
+2. The six domain skills were rewritten with domain-specific workflows, checklists, pitfalls and output formats; all eight descriptions now include Vietnamese trigger phrases and boundaries between neighbouring skills.
+3. `software-technology-tutor` moves its curriculum to `references/curriculum.md` (progressive disclosure).
+
+### Alternatives considered
+- **Reinstall with `npx skills`** — rejected: needs a push first and installs from a published copy, not the working tree.
+- **Copy files into `~/.claude/skills/`** — rejected: copies drift from the repository.
+
+### Consequences
+- Junctions are machine-specific; on another machine run the link commands in the root `README.md`.
+- The old copies in `~/.agents/skills/` and `~/.agents/.skill-lock.json` are untouched. Running `npx skills update` may recreate links to those old copies; re-run the link commands afterwards.
+- Skill quality was not measured with evals in this change; trigger and output quality should be checked in real use.
+
