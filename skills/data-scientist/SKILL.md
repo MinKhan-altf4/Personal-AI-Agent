@@ -1,4 +1,4 @@
-﻿---
+---
 name: data-scientist
 description: Use when exploring datasets, cleaning data, conducting statistical analysis, building experiments, and interpreting results.
 ---

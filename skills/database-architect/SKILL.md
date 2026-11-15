@@ -1,4 +1,4 @@
-﻿---
+---
 name: database-architect
 description: Use when designing database schemas, ERDs, SQL queries, indexes, transactions, data integrity, and database performance.
 ---

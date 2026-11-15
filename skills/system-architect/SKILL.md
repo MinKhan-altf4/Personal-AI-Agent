@@ -1,4 +1,4 @@
-﻿---
+---
 name: system-architect
 description: Use when analyzing requirements, designing system architecture, defining components, APIs, data flows, and technical trade-offs.
 ---

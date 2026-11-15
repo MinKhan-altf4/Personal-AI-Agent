@@ -18,6 +18,8 @@ Each skill is maintained as a standalone `SKILL.md` using the Agent Skills forma
 | `data-scientist` | Data cleaning, statistics, experiments, and insights |
 | `ai-ml-engineer` | Machine learning pipelines, training, evaluation, and deployment |
 | `devops-engineer` | CI/CD, containers, infrastructure, and observability |
+| `software-technology-tutor` | Teaching software and IT concepts from first principles |
+| `study-tutor` | Teaching from uploaded textbooks, slides, papers, and course notes |
 
 ## Repository structure
 
@@ -28,24 +30,27 @@ skills/
 ├── database-architect/SKILL.md
 ├── data-scientist/SKILL.md
 ├── ai-ml-engineer/SKILL.md
-└── devops-engineer/SKILL.md
+├── devops-engineer/SKILL.md
+├── software-technology-tutor/SKILL.md
+└── study-tutor/SKILL.md
+personal-ai-workspace/   # Personal AI-agent workspace (context, agents, config)
 ```
+
+See [`personal-ai-workspace/README.md`](personal-ai-workspace/README.md) for the agent workspace.
 
 ## Installation
 
 Install the skills using the open-source Skills CLI:
 
 ```bash
-npx skills add YOUR_GITHUB_USERNAME/it-agent-skills
+npx skills add MinKhan-altf4/Personal-AI-Agent
 ```
 
 To install all skills for all supported agents:
 
 ```bash
-npx skills add YOUR_GITHUB_USERNAME/it-agent-skills --all
+npx skills add MinKhan-altf4/Personal-AI-Agent --all
 ```
-
-Replace `YOUR_GITHUB_USERNAME` with the GitHub account or organization that owns this repository.
 
 Compatibility depends on the AI client and its support for Agent Skills.
 
@@ -60,4 +65,4 @@ Compatibility depends on the AI client and its support for Agent Skills.
 
 ## License
 
-See `LICENSE` for usage terms.
+No license has been chosen yet. Until a `LICENSE` file is added, all rights are reserved by the author.

@@ -1,4 +1,4 @@
-﻿---
+---
 name: devops-engineer
 description: Use when working on CI/CD, deployment, Docker, infrastructure, monitoring, reliability, and operational automation.
 ---

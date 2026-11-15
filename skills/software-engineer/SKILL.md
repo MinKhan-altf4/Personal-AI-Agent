@@ -1,4 +1,4 @@
-﻿---
+---
 name: software-engineer
 description: Use when implementing features, debugging code, refactoring, writing tests, and reviewing software quality.
 ---
