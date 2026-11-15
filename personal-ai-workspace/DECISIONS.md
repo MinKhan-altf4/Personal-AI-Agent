@@ -119,3 +119,32 @@ To keep QA independent, `agents/qa-auditor/AGENT.md` adds a rule: QA must not ed
 ### Consequences
 - Running the runtime needs an Anthropic API key and costs money per task. `--dry-run` runs offline with a scripted model for testing.
 - Phase 4 (more agents/integrations) and Phase 5 (dashboard) remain gated on demonstrated need, per the roadmap.
+
+---
+
+## DEC-005 — Let the runtime work on registered external project repositories
+
+- **Date:** 2026-11-15
+- **Status:** approved
+- **Approver:** Commander (chose `D:/Project/KnightOnline` with read-and-approved-write access)
+- **Source task:** TASK-20261115-005
+
+### Context
+Product source code lives in its own repositories (README §1, `projects/README.md`), but the runtime confined every path to this workspace, so agents could not work on KnightOnline.
+
+### Decision
+1. External repositories are registered in `config/projects.yaml` (id, `source_path`, `access`, `rules`, `exclude`, `test_command`). Context stays in `projects/<id>/PROJECT_CONTEXT.md`.
+2. `run --project <id>` attaches one project to a task. Tools address its files with the `project:` prefix; unprefixed paths stay in the workspace.
+3. The project's `rules` files (for KnightOnline: `AGENTS.md`, `Documentation/KNIGHT_PROJECT_CORE_RULES.md`) are loaded into every agent's system prompt for that task.
+4. Writes to a project need level 2, `access: read_write`, and the Commander's approval **for every write**. `qa_auditor` never writes there. `.git`, secrets and `exclude` entries are never read or written.
+5. `run_tests` may run `dotnet test` on a project folder that contains a `.csproj`/`.sln` when `test_command: dotnet`.
+6. The runtime never commits, branches or pushes in the project; the Commander reviews `git diff` and commits.
+
+### Alternatives considered
+- **Copy project files into the workspace** — rejected: two sources of truth.
+- **Register the project path as the workspace root** — rejected: loses workspace rules, task records and the permission model.
+
+### Consequences
+- `config/projects.yaml` contains a machine-specific path; on another machine `check` reports it as missing until edited.
+- `dotnet test` writes build output (`bin/`, `obj/`) inside the project; these are git-ignored there.
+- Only `qa_auditor` has the test runner; Engineering cannot run tests itself (registry unchanged).

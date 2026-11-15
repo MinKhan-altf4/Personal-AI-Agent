@@ -31,7 +31,38 @@ class TempWorkspace:
         shutil.copy2(WORKSPACE / "tasks" / "INDEX.md", root / "tasks" / "INDEX.md")
         (root / ".env").write_text("SECRET=1\n", encoding="utf-8")
         (root / "notes.md").write_text("hello\n", encoding="utf-8")
+        self._make_fake_project(base, root)
         return root
+
+    @staticmethod
+    def _make_fake_project(base: Path, root: Path) -> None:
+        """Replace config/projects.yaml so tests never point at a real project repository."""
+        demo = base / "demo-repo"
+        for d in (".git", ".tmp", "src", "src.Tests"):
+            (demo / d).mkdir(parents=True)
+        (demo / "AGENTS.md").write_text("DEMO-RULE: always write tests first.\n", encoding="utf-8")
+        (demo / "README.md").write_text("demo readme\n", encoding="utf-8")
+        (demo / "src" / "app.cs").write_text("// original\n", encoding="utf-8")
+        (demo / ".git" / "config").write_text("[core]\n", encoding="utf-8")
+        (demo / ".tmp" / "cache.bin").write_text("x", encoding="utf-8")
+        (root / "projects" / "demo").mkdir(parents=True)
+        (root / "projects" / "demo" / "PROJECT_CONTEXT.md").write_text("# Demo context\n", encoding="utf-8")
+        (root / "config" / "projects.yaml").write_text(
+            "projects:\n"
+            "  demo:\n"
+            "    name: Demo\n"
+            "    context: projects/demo/PROJECT_CONTEXT.md\n"
+            f"    source_path: \"{demo.as_posix()}\"\n"
+            "    access: read_write\n"
+            "    rules: [AGENTS.md]\n"
+            "    exclude: [.tmp, obj, bin]\n"
+            "    test_command: dotnet\n"
+            "  readonly:\n"
+            "    name: Read-only demo\n"
+            f"    source_path: \"{demo.as_posix()}\"\n"
+            "    access: read\n",
+            encoding="utf-8",
+        )
 
     def __exit__(self, *exc) -> None:
         self._tmp.cleanup()

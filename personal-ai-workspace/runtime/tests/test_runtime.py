@@ -30,7 +30,9 @@ def plan(agent="engineering", needs_qa=True, clarification=""):
 class ConfigTests(unittest.TestCase):
     def test_real_workspace_is_consistent(self):
         ws = load_workspace(WORKSPACE)
-        self.assertEqual(validate(ws), [])
+        # A registered project repo may be absent on another machine; everything else must be valid.
+        self.assertEqual([p for p in validate(ws) if "source_path not found" not in p], [])
+        self.assertIn("knightonline", ws.projects)
         self.assertEqual(ws.agent("qa_auditor").permission_level, 2)
         self.assertEqual(ws.profile_for("engineering").model, "claude-opus-5-5")
 
@@ -205,6 +207,89 @@ class OrchestratorTests(unittest.TestCase):
         self.assertEqual(result.executor.tool_errors, 1)
         self.assertEqual([t["name"] for t in model.calls[1]["tools"]], ["read_file", "list_dir"])
 
+
+
+class ProjectTests(unittest.TestCase):
+    """External project repositories (DEC-005). Uses a fake repo, never a real one."""
+
+    def setUp(self):
+        self._tmp = TempWorkspace()
+        self.root = self._tmp.__enter__()
+        self.ws = load_workspace(self.root)
+        self.demo = self.ws.project("demo")
+        self.store = make_store(self.root)
+
+    def tearDown(self):
+        self.store.close()
+        self._tmp.__exit__(None, None, None)
+
+    def test_project_paths_resolve_with_exclusions(self):
+        policy = Policy(self.ws, project=self.demo)
+        self.assertEqual(policy.resolve("project:README.md"), self.demo.source_path / "README.md")
+        for bad in ("project:.git/config", "project:.tmp/cache.bin", "project:../outside.txt"):
+            with self.assertRaises(PolicyError, msg=bad):
+                policy.resolve(bad)
+        with self.assertRaises(PolicyError):
+            Policy(self.ws).resolve("project:README.md")  # no project selected
+
+    def test_project_write_rules(self):
+        eng, qa, research = (self.ws.agent(a) for a in ("engineering", "qa_auditor", "research"))
+        with self.assertRaises(PolicyError):
+            Policy(self.ws, deny_all, self.demo).check_write(eng, "project:src/app.cs", "T")  # not approved
+        Policy(self.ws, approve_all, self.demo).check_write(eng, "project:src/app.cs", "T")
+        with self.assertRaises(PolicyError):
+            Policy(self.ws, approve_all, self.demo).check_write(qa, "project:src/app.cs", "T")
+        with self.assertRaises(PolicyError):
+            Policy(self.ws, approve_all, self.demo).check_write(research, "project:src/app.cs", "T")
+        with self.assertRaises(PolicyError):
+            Policy(self.ws, approve_all, self.ws.project("readonly")).check_write(eng, "project:src/app.cs", "T")
+
+    def test_list_dir_project_root(self):
+        ctx = tools.ToolContext(self.ws, Policy(self.ws, project=self.demo), self.ws.agent("research"), "T", self.store)
+        listing, err = tools.execute(ctx, "list_dir", {"path": "project:"})
+        self.assertFalse(err)
+        self.assertIn("project:README.md", listing)
+        self.assertIn("project:src/", listing)
+        self.assertNotIn(".git", listing)
+        self.assertNotIn(".tmp", listing)
+
+    def test_dotnet_tests_need_a_project_file(self):
+        ctx = tools.ToolContext(self.ws, Policy(self.ws, project=self.demo), self.ws.agent("qa_auditor"), "T", self.store)
+        result, err = tools.execute(ctx, "run_tests", {"directory": "project:src.Tests"})
+        self.assertTrue(err)
+        self.assertIn(".csproj", result)
+
+    def test_project_rules_in_system_prompt_and_stable(self):
+        a = prompts.system_blocks(self.ws, self.ws.agent("engineering"), "execute", self.demo)
+        b = prompts.system_blocks(self.ws, self.ws.agent("engineering"), "execute", self.demo)
+        self.assertEqual(a, b)
+        joined = "\n".join(blk["text"] for blk in a)
+        self.assertIn("DEMO-RULE", joined)
+        self.assertIn("# Demo context", joined)
+
+    def run_project_task(self, approver):
+        model = ScriptedModel({
+            "classify": [plan("engineering", needs_qa=False)],
+            "execute": [tool_turn(("read_file", {"path": "project:src/app.cs"})),
+                        tool_turn(("write_file", {"path": "project:src/app.cs", "content": "// changed\n"})),
+                        text_turn("Changed project:src/app.cs\nSTATUS: completed")],
+        })
+        orch = Orchestrator(self.ws, self.store, model, Policy(self.ws, approver, self.demo), today=DAY)
+        return orch.run("Change app.cs"), model
+
+    def test_project_task_writes_after_approval(self):
+        result, model = self.run_project_task(approve_all)
+        self.assertEqual(result.status, "completed")
+        self.assertEqual((self.demo.source_path / "src" / "app.cs").read_text(encoding="utf-8"), "// changed\n")
+        self.assertEqual(result.plan["project"], "demo")
+        self.assertIn("Project: demo", model.calls[0]["messages"][0]["content"])
+        index = (self.root / "tasks" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn(f"| {result.task_id} | Test task | demo | engineering | completed |", index)
+
+    def test_project_task_refused_write_leaves_repo_untouched(self):
+        result, _ = self.run_project_task(deny_all)
+        self.assertEqual(result.executor.tool_errors, 1)
+        self.assertEqual((self.demo.source_path / "src" / "app.cs").read_text(encoding="utf-8"), "// original\n")
 
 if __name__ == "__main__":
     unittest.main()

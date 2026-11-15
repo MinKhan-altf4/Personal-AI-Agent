@@ -6,7 +6,17 @@ system prompt stays byte-identical across requests and prompt caching can hit.
 
 from __future__ import annotations
 
-from .config import AgentSpec, Workspace
+from .config import AgentSpec, ProjectSpec, Workspace
+
+PROJECT_INSTRUCTIONS = """\
+This task belongs to the external project repository described above.
+- Address its files with the 'project:' prefix (e.g. 'project:README.md', 'project:KnightServer').
+  Paths without the prefix point to the AI workspace, not the project.
+- The project's own rules are mandatory and override general habits. Read the relevant source before changing it.
+- Every write to the project needs the Commander's approval. Make the smallest change that meets the criteria.
+- You cannot commit, branch or push. State in your report which project files you changed, so the Commander
+  can review `git diff` and commit.
+"""
 
 RUNTIME_PREAMBLE = """\
 You are running inside the Personal AI-Agent Workspace runtime (v0.1, Phase 3) as the agent named below.
@@ -49,7 +59,20 @@ def _section(title: str, body: str) -> str:
     return f"<{title}>\n{body.strip()}\n</{title}>"
 
 
-def system_blocks(ws: Workspace, agent: AgentSpec, mode: str) -> list[dict]:
+def project_sections(project: ProjectSpec) -> list[str]:
+    parts = []
+    if project.context_path and project.context_path.is_file():
+        parts.append(_section(f"project_context id=\"{project.id}\"",
+                              project.context_path.read_text(encoding="utf-8-sig")))
+    for rule in project.rules:
+        text = (project.source_path / rule).read_text(encoding="utf-8-sig")
+        parts.append(_section(f"project_rules file=\"project:{rule}\"", text))
+    access = "read and write (each write approved)" if project.writable else "read only"
+    parts.append(f"Project '{project.id}' ({project.name}). Access: {access}.\n" + PROJECT_INSTRUCTIONS)
+    return parts
+
+
+def system_blocks(ws: Workspace, agent: AgentSpec, mode: str, project: ProjectSpec | None = None) -> list[dict]:
     """Ordered system blocks; the last one carries the cache breakpoint."""
     parts = [RUNTIME_PREAMBLE + f"\nYour agent id: {agent.id} ({agent.name}). Permission level: {agent.permission_level}."]
     parts.append(_section("workspace_rules file=\"AGENTS.md\"", ws.read_text("AGENTS.md")))
@@ -60,6 +83,8 @@ def system_blocks(ws: Workspace, agent: AgentSpec, mode: str) -> list[dict]:
         parts.append(_section("agent_procedure", agent.skill_path.read_text(encoding="utf-8-sig")))
     for path in agent.domain_skill_paths:
         parts.append(_section(f"domain_skill name=\"{path.parent.name}\"", path.read_text(encoding="utf-8-sig")))
+    if project is not None:
+        parts.extend(project_sections(project))
     if mode == "classify":
         parts.append(_section("agent_registry file=\"config/agent-registry.yaml\"",
                               ws.read_text("config/agent-registry.yaml")))

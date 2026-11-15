@@ -30,6 +30,24 @@ class AgentSpec:
 
 
 @dataclass(frozen=True)
+class ProjectSpec:
+    """An external source repository registered in config/projects.yaml (DEC-005)."""
+
+    id: str
+    name: str
+    source_path: Path
+    access: str                      # "read" | "read_write"
+    context_path: Path | None
+    rules: tuple[str, ...]
+    exclude: tuple[str, ...]
+    test_command: str | None
+
+    @property
+    def writable(self) -> bool:
+        return self.access == "read_write"
+
+
+@dataclass(frozen=True)
 class ModelProfile:
     model: str
     effort: str
@@ -46,6 +64,7 @@ class Workspace:
     agent_profiles: dict[str, str]
     refusal_fallback: str | None
     max_tool_turns: int
+    projects: dict[str, ProjectSpec] = field(default_factory=dict)
     raw: dict = field(default_factory=dict)
 
     # --- convenience -----------------------------------------------------
@@ -62,6 +81,12 @@ class Workspace:
         if name not in self.profiles:
             raise ConfigError(f"Agent '{agent_id}' uses unknown profile '{name}'")
         return self.profiles[name]
+
+    def project(self, project_id: str) -> ProjectSpec:
+        if project_id not in self.projects:
+            known = ", ".join(self.projects) or "none"
+            raise ConfigError(f"Unknown project '{project_id}' (registered: {known})")
+        return self.projects[project_id]
 
     def read_text(self, relative: str) -> str:
         return (self.root / relative).read_text(encoding="utf-8-sig")
@@ -130,8 +155,24 @@ def load_workspace(root: Path | None = None) -> Workspace:
     if not profiles:
         raise ConfigError("model-routing.yaml has no runtime.profile_models section")
 
+    projects_file = root / "config" / "projects.yaml"
+    projects_cfg = _load_yaml(projects_file) if projects_file.is_file() else {}
+    projects: dict[str, ProjectSpec] = {}
+    for project_id, p in (projects_cfg.get("projects") or {}).items():
+        projects[project_id] = ProjectSpec(
+            id=project_id,
+            name=p.get("name", project_id),
+            source_path=Path(p["source_path"]).expanduser().resolve(),
+            access=p.get("access", "read"),
+            context_path=resolve(p.get("context")),
+            rules=tuple(p.get("rules", []) or []),
+            exclude=tuple(p.get("exclude", []) or []),
+            test_command=p.get("test_command"),
+        )
+
     return Workspace(
         root=root,
+        projects=projects,
         agents=agents,
         tool_min_levels=tool_min_levels,
         task_output_area=permissions.get("task_output_area", "tasks/<TASK-ID>/"),
@@ -164,6 +205,19 @@ def validate(ws: Workspace) -> list[str]:
             ws.profile_for(agent.id)
         except ConfigError as exc:
             problems.append(str(exc))
+    for project in ws.projects.values():
+        if project.access not in {"read", "read_write"}:
+            problems.append(f"project {project.id}: access must be 'read' or 'read_write'")
+        if project.test_command not in {None, "dotnet", "python"}:
+            problems.append(f"project {project.id}: test_command must be 'dotnet', 'python' or empty")
+        if not project.source_path.is_dir():
+            problems.append(f"project {project.id}: source_path not found ({project.source_path})")
+            continue
+        if project.context_path is not None and not project.context_path.is_file():
+            problems.append(f"project {project.id}: context file missing ({project.context_path})")
+        for rule in project.rules:
+            if not (project.source_path / rule).is_file():
+                problems.append(f"project {project.id}: rules file missing ({rule})")
     if "orchestrator" not in ws.agents or not ws.agents["orchestrator"].active:
         problems.append("The orchestrator agent must be registered and active")
     return problems

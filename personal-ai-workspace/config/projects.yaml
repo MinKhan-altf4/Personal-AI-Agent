@@ -1,0 +1,20 @@
+# External project repositories the runtime may work on (DEC-005).
+# Product source code stays in its own repository; this workspace only stores context and decisions.
+#
+# access:   read        -> agents may read the repo only
+#           read_write  -> level-2 agents may also write; EVERY write asks the Commander (y/N)
+# rules:    files inside the repo that agents must follow; loaded into the system prompt
+# exclude:  folder or file names never read, listed or written (in addition to secrets and .git)
+# test_command: allow-listed test runner used by run_tests for this project
+
+projects:
+  knightonline:
+    name: "KnightOnline (MMORPG — Unity client + .NET server)"
+    context: "projects/knightonline/PROJECT_CONTEXT.md"
+    source_path: "D:/Project/KnightOnline"
+    access: read_write
+    rules:
+      - "AGENTS.md"
+      - "Documentation/KNIGHT_PROJECT_CORE_RULES.md"
+    exclude: [".tmp", "Builds", "obj", "bin", "Library", "Temp", "Logs", "UserSettings"]
+    test_command: dotnet

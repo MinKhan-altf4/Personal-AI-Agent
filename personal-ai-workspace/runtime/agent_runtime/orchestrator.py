@@ -50,13 +50,15 @@ class Orchestrator:
         self.ws, self.store, self.model, self.policy = ws, store, model, policy
         self.progress = progress
         self.today = today or date.today()
+        self.project = policy.project  # set by `run --project <id>` (DEC-005)
 
     # ------------------------------------------------------------------
     def executors(self) -> list[str]:
         return [a.id for a in self.ws.active_agents() if a.id != "orchestrator"]
 
     def run(self, request: str) -> TaskResult:
-        task_id = self.store.create(request, today=self.today)
+        task_id = self.store.create(request, today=self.today,
+                                    project=self.project.id if self.project else "global")
         self.store.log(task_id, "request", {"text": request})
         self.progress(f"[{task_id}] Đã tạo task, đang phân loại yêu cầu...")
         try:
@@ -64,6 +66,8 @@ class Orchestrator:
         except ModelError as exc:
             return self._finish_blocked(task_id, {"title": "(intake failed)", "objective": request}, str(exc))
 
+        if self.project is not None:
+            plan["project"] = self.project.id
         self.store.update(task_id, title=plan["title"], project=plan.get("project") or "global",
                           primary_agent=plan["primary_agent"])
         self._write_brief(task_id, request, plan)
@@ -99,11 +103,13 @@ class Orchestrator:
     def _classify(self, task_id: str, request: str) -> dict:
         orch = self.ws.agent("orchestrator")
         executors = self.executors()
-        user = (f"Today: {self.today.isoformat()}\nTask ID: {task_id}\nExecutors: {', '.join(executors)}\n\n"
+        project_line = f"Project: {self.project.id}\n" if self.project else ""
+        user = (f"Today: {self.today.isoformat()}\nTask ID: {task_id}\n{project_line}"
+                f"Executors: {', '.join(executors)}\n\n"
                 f"Commander's request:\n{request}")
         turn = self.model.complete(
             purpose="classify", profile=self.ws.profile_for(orch.id),
-            system=prompts.system_blocks(self.ws, orch, "classify"),
+            system=prompts.system_blocks(self.ws, orch, "classify", self.project),
             messages=[{"role": "user", "content": user}], tools=[],
             output_schema=prompts.classify_schema(executors),
         )
@@ -126,7 +132,7 @@ class Orchestrator:
         if missing:
             run.notes.append(f"Registry tools not available in runtime v0.1: {', '.join(missing)}")
         ctx = tools.ToolContext(self.ws, self.policy, agent, task_id, self.store)
-        system = prompts.system_blocks(self.ws, agent, mode)
+        system = prompts.system_blocks(self.ws, agent, mode, self.project)
         api_tools = [s.to_api() for s in specs]
         messages: list = [{"role": "user", "content": user_prompt}]
         profile = self.ws.profile_for(agent.id)
@@ -182,7 +188,9 @@ class Orchestrator:
     def _execute_prompt(self, task_id: str, plan: dict) -> str:
         criteria = "\n".join(f"- {c}" for c in plan.get("acceptance_criteria", []))
         return (f"Task ID: {task_id}\nDate: {self.today.isoformat()}\nProject: {plan.get('project', 'global')}\n"
-                f"Task folder: tasks/{task_id}/ (TASK.md there holds the brief)\n\n"
+                f"Task folder: tasks/{task_id}/ (TASK.md there holds the brief)\n"
+                + ("Project repository: use 'project:' paths (root: 'project:')\n" if self.project else "")
+                + "\n"
                 f"Objective:\n{plan['objective']}\n\nAcceptance criteria:\n{criteria}")
 
     def _review_prompt(self, task_id: str, plan: dict, exec_run: AgentRun) -> str:

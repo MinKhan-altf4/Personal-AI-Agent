@@ -46,6 +46,19 @@ Use `.\.venv\Scripts\python.exe` in place of `python` unless the venv is activat
 
 Exit codes: `0` finished (completed or partial), `1` configuration error, `2` model error, `3` task blocked.
 
+## Working on a project repository (DEC-005)
+
+Register the repository in `../config/projects.yaml` and describe it in `../projects/<id>/PROJECT_CONTEXT.md`, then:
+
+```powershell
+.\.venv\Scripts\python.exe -m agent_runtime run "Review the reconnect handling in KnightServer" --project knightonline
+```
+
+- Agents see the project as `project:` paths (`project:KnightServer/...`); its `rules` files are loaded into their prompt.
+- Every write into the project asks `Đồng ý? [y/N]` in the terminal. `--yes` approves all of them — avoid it for project work.
+- The runtime never commits. Afterwards, review and commit in the project yourself (`git -C D:\Project\KnightOnline diff`).
+- `qa_auditor` can run `dotnet test` on a test project folder, e.g. `project:KnightServer.Tests`.
+
 ## Permission enforcement
 
 `agent_runtime/policy.py` enforces `config/permissions.yaml` in code:

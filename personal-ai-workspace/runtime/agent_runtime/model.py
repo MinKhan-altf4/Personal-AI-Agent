@@ -164,7 +164,8 @@ class DryRunModel:
             for m in messages if m["role"] == "user"
         )
         if not already_called and "list_dir" in tool_names:
-            call = ToolCall("dryrun_1", "list_dir", {"path": "."})
+            in_project = "Project repository:" in self._last_user_text(messages[:1])
+            call = ToolCall("dryrun_1", "list_dir", {"path": "project:" if in_project else "."})
             content = [{"type": "tool_use", "id": call.id, "name": call.name, "input": call.input}]
             return ModelTurn("tool_use", content, tool_calls=[call], usage=usage, model=self.model_name)
 

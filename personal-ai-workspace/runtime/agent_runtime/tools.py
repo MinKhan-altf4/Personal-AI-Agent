@@ -2,18 +2,23 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
 from typing import Callable
 
 from .config import AgentSpec, Workspace
-from .policy import Policy, PolicyError
+from .policy import Policy, PolicyError, is_project_path
 from .store import TaskStore
 
 MAX_READ_CHARS = 200_000
 MAX_LIST_ENTRIES = 500
 TEST_TIMEOUT_SECONDS = 300
+DOTNET_TEST_TIMEOUT_SECONDS = 900
+
+PATH_HELP = ("Paths are relative to the workspace root; prefix with 'project:' for the task's project "
+             "repository (e.g. 'project:README.md').")
 
 
 @dataclass
@@ -64,7 +69,7 @@ def _list_dir(ctx: ToolContext, args: dict) -> str:
         raise NotADirectoryError(f"No such directory: {args['path']}")
     entries = []
     for child in sorted(path.iterdir(), key=lambda p: (p.is_file(), p.name.lower())):
-        rel = child.relative_to(ctx.ws.root).as_posix()
+        rel = ctx.policy.display(child)
         try:
             ctx.policy.resolve(rel)
         except PolicyError:
@@ -98,24 +103,36 @@ def _run_tests(ctx: ToolContext, args: dict) -> str:
     target = ctx.policy.resolve(args["directory"])
     if not target.is_dir():
         raise NotADirectoryError(f"No such directory: {args['directory']}")
-    # Allow-listed command only: the stdlib unittest runner. No arbitrary shell.
-    cmd = [sys.executable, "-m", "unittest", "discover", "-s", str(target), "-t", str(target)]
-    proc = subprocess.run(cmd, cwd=target, capture_output=True, text=True, timeout=TEST_TIMEOUT_SECONDS)
+    env = None
+    timeout = TEST_TIMEOUT_SECONDS
+    use_dotnet = is_project_path(args["directory"]) and ctx.policy.project.test_command == "dotnet"
+    if use_dotnet:
+        # Allow-listed: `dotnet test` on a folder that holds a project or solution file.
+        if not any(target.glob("*.csproj")) and not any(target.glob("*.sln*")):
+            raise ValueError(f"No .csproj or .sln in {args['directory']}; point run_tests at a test project folder")
+        cmd = ["dotnet", "test", str(target), "--nologo"]
+        env = {**os.environ, "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1"}
+        timeout = DOTNET_TEST_TIMEOUT_SECONDS
+    else:
+        # Allow-listed: the stdlib unittest runner. No arbitrary shell.
+        cmd = [sys.executable, "-m", "unittest", "discover", "-s", str(target), "-t", str(target)]
+    proc = subprocess.run(cmd, cwd=target, capture_output=True, text=True, encoding="utf-8",
+                          errors="replace", timeout=timeout, env=env)
     output = (proc.stdout + proc.stderr)[-20_000:]
-    return f"exit_code={proc.returncode}\n{output}"
+    return f"command={' '.join(cmd[:3])} ...\nexit_code={proc.returncode}\n{output}"
 
 
 TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         "read_file", "read_workspace",
-        "Read a UTF-8 text file. `path` is relative to the workspace root (e.g. 'PROJECT_CONTEXT.md').",
-        {"path": {"type": "string", "description": "Workspace-relative file path"}},
+        "Read a UTF-8 text file. " + PATH_HELP,
+        {"path": {"type": "string", "description": "File path"}},
         _read_file,
     ),
     ToolSpec(
         "list_dir", "read_workspace",
-        "List files and folders in a workspace directory. Use '.' for the workspace root.",
-        {"path": {"type": "string", "description": "Workspace-relative directory path"}},
+        "List files and folders in a directory. Use '.' for the workspace root or 'project:' for the project root. " + PATH_HELP,
+        {"path": {"type": "string", "description": "Directory path"}},
         _list_dir,
     ),
     ToolSpec(
@@ -130,18 +147,20 @@ TOOLS: tuple[ToolSpec, ...] = (
     ),
     ToolSpec(
         "write_file", "approved_file_edit",
-        "Create or overwrite a file anywhere in the workspace. Writes outside the task folder need the "
-        "Commander's approval and may be refused. Always read a file before overwriting it.",
+        "Create or overwrite a file in the workspace or the project repository. Writes outside the task folder, "
+        "and every write to the project repository, need the Commander's approval and may be refused. "
+        "Always read a file before overwriting it and keep unrelated content unchanged. " + PATH_HELP,
         {
-            "path": {"type": "string", "description": "Workspace-relative file path"},
+            "path": {"type": "string", "description": "File path"},
             "content": {"type": "string", "description": "Full new file content"},
         },
         _write_file,
     ),
     ToolSpec(
         "run_tests", "approved_test_runner",
-        "Run the Python unittest suite found in a workspace directory and return the output.",
-        {"directory": {"type": "string", "description": "Workspace-relative directory containing tests"}},
+        "Run tests and return the output. Workspace folders run Python unittest; a project folder that contains a "
+        ".csproj runs `dotnet test` when the project allows it. " + PATH_HELP,
+        {"directory": {"type": "string", "description": "Directory containing the tests"}},
         _run_tests,
     ),
 )

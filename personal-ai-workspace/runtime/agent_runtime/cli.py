@@ -36,6 +36,10 @@ def cmd_check(ws, _args) -> int:
         missing = tools.unimplemented_registry_tools(agent)
         print(f"  + {agent.id:<18} level {agent.permission_level}  {profile.model}/{profile.effort}")
         print(f"      tools: {', '.join(given) or '-'}" + (f"  (not in v0.1: {', '.join(missing)})" if missing else ""))
+    if ws.projects:
+        print("\nDự án đã đăng ký (dùng với `run --project <id>`):")
+        for p in ws.projects.values():
+            print(f"  * {p.id:<18} {p.access:<10} {p.source_path}")
     if problems:
         print("\nVấn đề cấu hình:")
         for p in problems:
@@ -56,7 +60,17 @@ def cmd_run(ws, args) -> int:
     except ImportError:
         print("Thiếu thư viện `anthropic`. Chạy: pip install -r runtime/requirements.txt", file=sys.stderr)
         return 1
-    policy = Policy(ws, approver=approve_all if args.yes else _console_approver)
+    project = None
+    if args.project:
+        try:
+            project = ws.project(args.project)
+        except ConfigError as exc:
+            print(f"Lỗi: {exc}", file=sys.stderr)
+            return 1
+        if args.yes and project.writable:
+            print(f"Lưu ý: --yes sẽ tự duyệt mọi lệnh ghi vào {project.source_path}. "
+                  f"Hãy xem `git diff` trong repo đó trước khi commit.")
+    policy = Policy(ws, approver=approve_all if args.yes else _console_approver, project=project)
     store = _store(ws)
     try:
         orch = Orchestrator(ws, store, model, policy, progress=print)
@@ -126,6 +140,7 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("request", help="Yêu cầu bằng ngôn ngữ tự nhiên")
     p_run.add_argument("--dry-run", action="store_true", help="Chạy offline bằng model giả lập, không tốn phí")
     p_run.add_argument("--yes", action="store_true", help="Tự động duyệt các lệnh ghi file ngoài thư mục task")
+    p_run.add_argument("--project", metavar="ID", help="Làm việc trên repo dự án đã đăng ký trong config/projects.yaml")
     p_list = sub.add_parser("list", help="Liệt kê task gần đây")
     p_list.add_argument("--limit", type=int, default=20)
     p_show = sub.add_parser("show", help="Xem chi tiết và nhật ký của một task")

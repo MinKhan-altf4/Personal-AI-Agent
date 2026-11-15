@@ -70,15 +70,17 @@ class TaskStore:
         return f"TASK-{stamp}-{max(used, default=0) + 1:03d}"
 
     # --- tasks -----------------------------------------------------------
-    def create(self, request: str, title: str = "(classifying)", today: date | None = None) -> str:
+    def create(self, request: str, title: str = "(classifying)", today: date | None = None,
+               project: str = "global") -> str:
         task_id = self.next_task_id(today)
         ts = _now()
         with self.db:
             self.db.execute(
-                "INSERT INTO tasks (id, title, request, status, created_at, updated_at) VALUES (?,?,?,?,?,?)",
-                (task_id, title, request, "pending", ts, ts),
+                "INSERT INTO tasks (id, title, request, project, status, created_at, updated_at) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (task_id, title, request, project, "pending", ts, ts),
             )
-        self._append_index_row(task_id, title, "global", "-", "pending", ts[:10])
+        self._append_index_row(task_id, title, project, "-", "pending", ts[:10])
         return task_id
 
     def update(self, task_id: str, **fields) -> None:
