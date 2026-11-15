@@ -1,6 +1,6 @@
 # Task — [Short title]
 
-- **Task ID:** TASK-YYYYMMDD-001
+- **Task ID:** TASK-YYYYMMDD-NNN (allocate from `tasks/INDEX.md`, see `tasks/README.md`)
 - **Project:**
 - **Status:** pending
 - **Priority:** normal

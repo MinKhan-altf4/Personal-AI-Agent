@@ -2,6 +2,7 @@
 
 ## 1. Intake
 Capture the request, desired outcome, project, constraints, and expected deliverable.
+Allocate a Task ID and register it in `tasks/INDEX.md` (rules in `tasks/README.md`). Drafts and reports go in `tasks/<TASK-ID>/`.
 
 ## 2. Context
 Read `PROJECT_CONTEXT.md`, `AGENTS.md`, and relevant project documents.

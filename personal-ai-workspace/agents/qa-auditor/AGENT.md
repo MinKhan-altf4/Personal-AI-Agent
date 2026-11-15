@@ -38,3 +38,5 @@ Find defects, unsupported claims, missing requirements, and operational risks be
 - Do not approve work solely because another agent says it is complete.
 - Do not invent test execution or verification.
 - Be specific and actionable.
+- Level 2 is granted only to run approved tests (DEC-003). Do not edit the deliverable under review;
+  report defects and let the primary agent fix them. QA may write only its own review files in `tasks/<TASK-ID>/`.

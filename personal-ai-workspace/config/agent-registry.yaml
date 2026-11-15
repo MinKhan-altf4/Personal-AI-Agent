@@ -1,4 +1,7 @@
-registry_version: "1.0"
+registry_version: "1.1"
+
+# skill:         agent procedure (personal-ai-workspace/skills/)
+# domain_skills: specialist knowledge from the root library (../skills/), see DEC-001 in DECISIONS.md
 
 agents:
   - id: orchestrator
@@ -8,6 +11,7 @@ agents:
     status: active
     responsibility: "Intake, task decomposition, routing, coordination, synthesis"
     tools: [read_workspace, task_planning]
+    domain_skills: []
     permission_level: 1
 
   - id: research
@@ -17,6 +21,7 @@ agents:
     status: active
     responsibility: "Research, source evaluation, evidence synthesis"
     tools: [read_workspace, approved_web_search]
+    domain_skills: []
     permission_level: 1
 
   - id: engineering
@@ -26,6 +31,11 @@ agents:
     status: active
     responsibility: "Software design, implementation assistance, testing, code review"
     tools: [read_workspace, approved_file_edit, approved_shell, git]
+    domain_skills:
+      - "../skills/software-engineer/SKILL.md"
+      - "../skills/system-architect/SKILL.md"
+      - "../skills/database-architect/SKILL.md"
+      - "../skills/devops-engineer/SKILL.md"
     permission_level: 2
 
   - id: knowledge_manager
@@ -35,6 +45,7 @@ agents:
     status: active
     responsibility: "Context curation, knowledge retrieval, decision records"
     tools: [read_workspace, approved_file_edit]
+    domain_skills: []
     permission_level: 2
 
   - id: qa_auditor
@@ -44,12 +55,17 @@ agents:
     status: active
     responsibility: "Acceptance checks, evidence audit, risk and quality review"
     tools: [read_workspace, approved_test_runner]
-    permission_level: 1
+    domain_skills:
+      - "../skills/software-engineer/SKILL.md"
+    permission_level: 2  # raised from 1 by DEC-003
 
   - id: education
     name: "Education Agent"
     status: planned
     responsibility: "Teaching, learning plans, exercises, assessment"
+    domain_skills:
+      - "../skills/study-tutor/SKILL.md"
+      - "../skills/software-technology-tutor/SKILL.md"
     activate_when: "Core workflow is stable"
 
   - id: business
@@ -62,6 +78,9 @@ agents:
     name: "Data Analyst"
     status: planned
     responsibility: "Data cleaning, analysis, statistics, visualization"
+    domain_skills:
+      - "../skills/data-scientist/SKILL.md"
+      - "../skills/ai-ml-engineer/SKILL.md"
     activate_when: "Core workflow is stable"
 
   - id: project_manager

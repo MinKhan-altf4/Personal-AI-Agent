@@ -129,9 +129,10 @@ Add Education, Business, Data Analyst, and Project Manager agents after the core
 - Permissions: `config/permissions.yaml`
 - Model selection policy: `config/model-routing.yaml`
 - Agent role definitions: `agents/`
-- Reusable skill definitions: `skills/`
+- Agent procedure skills: `skills/` (how each agent operates)
+- Domain/specialist skills: `../skills/` at the repository root, referenced via `domain_skills` in the registry (see DEC-001)
 - Project-specific facts: `projects/<project>/`
-- Important decisions: each project’s `DECISIONS.md` or the workspace decision log when global
+- Important decisions: each project’s `DECISIONS.md`, or `DECISIONS.md` in this workspace when global
 
 If two documents conflict, do not silently choose one. Identify the conflict, prefer the newest explicitly approved decision, and ask the owner if approval status is unclear.
 

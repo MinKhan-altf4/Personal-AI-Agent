@@ -31,6 +31,7 @@ personal-ai-workspace/
 ├── README.md
 ├── PROJECT_CONTEXT.md
 ├── AGENTS.md
+├── DECISIONS.md            # Workspace-level decision log
 ├── .gitignore
 ├── config/
 │   ├── workspace.yaml
@@ -43,13 +44,20 @@ personal-ai-workspace/
 │   ├── engineering/AGENT.md
 │   ├── knowledge-manager/AGENT.md
 │   └── qa-auditor/AGENT.md
-├── skills/
+├── skills/                 # Agent procedures only (domain skills live in ../skills/)
 │   ├── orchestration/SKILL.md
 │   ├── research/SKILL.md
 │   ├── engineering/SKILL.md
 │   ├── knowledge-management/SKILL.md
 │   └── qa-auditor/SKILL.md
 ├── projects/
+│   └── README.md
+├── tasks/                  # Task register (INDEX.md) and per-task output area
+│   ├── README.md
+│   └── INDEX.md
+├── knowledge/
+│   └── README.md
+├── runtime/
 │   └── README.md
 ├── workflows/
 │   └── task-execution.md
@@ -101,9 +109,9 @@ Do not paste credentials or access tokens into files or commit history.
 3. Review `config/permissions.yaml` before connecting tools.
 4. Use `config/agent-registry.yaml` as the source of truth for available agents.
 5. Keep each agent's role in `agents/<agent-name>/AGENT.md`.
-6. Keep reusable procedures in `skills/<skill-name>/SKILL.md`.
+6. Keep agent procedures in `skills/<skill-name>/SKILL.md`. Keep domain/specialist knowledge in the root `../skills/` library and link it through `domain_skills` in the registry (DEC-001).
 7. Create one folder per project under `projects/` and start from `templates/project-context.md`.
-8. Record consequential decisions using `templates/decision-template.md`.
+8. Record consequential decisions using `templates/decision-template.md`; global decisions go in `DECISIONS.md`.
 
 ## 6. Important implementation boundary
 

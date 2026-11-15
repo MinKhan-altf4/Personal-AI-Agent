@@ -1,6 +1,6 @@
 # Decision — [Short title]
 
-- **Decision ID:** DEC-YYYYMMDD-001
+- **Decision ID:** DEC-NNN (workspace) or <PROJECT>-DEC-NNN (project) — see `tasks/README.md`
 - **Date:** YYYY-MM-DD
 - **Project:** global / [project]
 - **Status:** proposed

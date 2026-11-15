@@ -33,6 +33,8 @@ workspace:
     workflows: "workflows/"
     templates: "templates/"
     runtime: "runtime/"
+    tasks: "tasks/"
+    decisions: "DECISIONS.md"
 
   execution:
     default_mode: "plan_then_execute"

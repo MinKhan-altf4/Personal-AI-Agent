@@ -62,3 +62,50 @@ defaults:
   unknown_action: deny
   external_network_access: disabled_until_configured
   production_access: disabled
+
+# Where level-1 agents may write drafts (see tasks/README.md).
+task_output_area: "tasks/<TASK-ID>/"
+
+# Tool catalog: every tool named in agent-registry.yaml must appear here.
+# An agent may use a tool only if its permission_level >= the tool's min_level.
+tools:
+  read_workspace:
+    min_level: 0
+    actions: [read_approved_workspace_files, analyze, summarize]
+  task_planning:
+    min_level: 1
+    actions: [create_task_plans, create_drafts_in_task_output_area]
+  approved_web_search:
+    min_level: 0
+    actions: [search_approved_sources]
+    requires: "external_network_access enabled (currently disabled_until_configured)"
+  approved_file_edit:
+    min_level: 2
+    actions: [edit_files_within_approved_workspace]
+  approved_shell:
+    min_level: 2
+    actions: [run_approved_tests]
+    note: "Only allow-listed commands; anything destructive is level 4."
+  git:
+    min_level: 2
+    actions: [create_local_branches]
+    note: "Local commits/branches only. git push publishes to a remote = level 3."
+  approved_test_runner:
+    min_level: 2
+    actions: [run_approved_tests]
+
+# How these rules are enforced today (see DECISIONS.md, DEC-002).
+enforcement:
+  current_phase: 2
+  mechanisms:
+    - layer: prompt
+      scope: "All AI clients"
+      description: "Agents follow AGENTS.md and this file. Not enforced, compliance only."
+    - layer: claude_code_settings
+      scope: "Claude Code sessions in this repository"
+      file: "../.claude/settings.json"
+      description: "Hard deny for secrets; ask-before for git push and destructive commands."
+  planned:
+    - layer: runtime_policy
+      phase: 3
+      description: "Python runtime checks agent level vs tool min_level before each tool call."
